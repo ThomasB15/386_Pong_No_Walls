@@ -17,9 +17,9 @@ ball_vel = [0,0]
 BALL_RADIUS = 5
 horz = 0
 vert = 0
-Playerpoints = 11
-Aipoints = 11
-
+Player_points = 11
+Ai_points = 11
+points_Needed_Win = 11
 
 def terminate():
     pygame.quit()
@@ -37,12 +37,13 @@ def  waitForPlayerInput():
                 return
 
 
+# function that creates the ball and sets its initial speed
 def ball_create(right):
     global ball_pos, ball_vel, horz, vert
 
-    ball_pos = [WINDOWWIDTH // 2, random.randint(100, 301)]
-    horz = random.randrange(2,4)
-    vert = random.randrange(1,3)
+    ball_pos = [WINDOWWIDTH // 2, random.randrange(100, 400, 100)]
+    horz = random.randrange(2,5)
+    vert = random.randrange(-5,5)
 
     if right == False:
         horz = - horz
@@ -50,7 +51,6 @@ def ball_create(right):
     ball_vel = [horz, -vert]
 
 # set up the pygame and the window
-
 
 pygame.init()
 fps = pygame.time.Clock()
@@ -69,8 +69,6 @@ Player_point = pygame.mixer.Sound('goalScore.wav')
 winner_Round_AI = pygame.mixer.Sound('winnerAI.wav')
 winner_Round_Player = pygame.mixer.Sound('winnerPlayer.wav')
 
-
-font = pygame.font.SysFont(None, 48)
 
 paddle1Pos = [4, WINDOWHEIGHT // 2]
 paddle2Pos = [0, 0]
@@ -160,7 +158,10 @@ while True:
 
         windowSurface.fill(BLACK)
 
-        pygame.draw.line(windowSurface, WHITE, [WINDOWWIDTH // 2, 0], [WINDOWWIDTH // 2, WINDOWHEIGHT], 1)
+        pygame.draw.line(windowSurface, WHITE, [WINDOWWIDTH // 2, 50], [WINDOWWIDTH // 2, 100], 1)
+        pygame.draw.line(windowSurface, WHITE, [WINDOWWIDTH // 2, 150], [WINDOWWIDTH // 2, 200], 1)
+        pygame.draw.line(windowSurface, WHITE, [WINDOWWIDTH // 2, 250], [WINDOWWIDTH // 2, 300], 1)
+        pygame.draw.line(windowSurface, WHITE, [WINDOWWIDTH // 2, 350], [WINDOWWIDTH // 2, 400], 1)
         pygame.draw.rect(windowSurface, WHITE, paddle1)
         pygame.draw.rect(windowSurface, WHITE, paddle2)
         pygame.draw.rect(windowSurface, WHITE, paddle3)
@@ -182,7 +183,11 @@ while True:
         score4 = font1.render("AI Games Won " + str(AI_Game_Wins), 1, WHITE)
         windowSurface.blit(score4, (600, 40))
 
+        score5 = font1.render("Points needed to win " + str(Player_points), 1, WHITE)
+        windowSurface.blit(score5, (50, 60))
 
+        score6 = font1.render("Points needed to win " + str(Ai_points), 1, WHITE)
+        windowSurface.blit(score6, (600, 60))
 
         paddle4Pos[1] = ball_pos[1]
         paddle5Pos[0] = ball_pos[0]
@@ -193,6 +198,7 @@ while True:
         windowSurface.blit(paddleImgRedraw2, paddle3)
         windowSurface.blit(paddleImgRedraw2, paddle5)
         windowSurface.blit(paddleImgRedraw2, paddle6)
+
         # Ai tracking the ball
         if int(paddle4Pos[1]) >= 0 and int(paddle4Pos[1]) <= WINDOWHEIGHT:
             paddle4.centery = ball_pos[1]
@@ -238,58 +244,56 @@ while True:
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1
             pongSound.play()
+
         # scoring the balls
         if int(ball_pos[1]) < 0:
             if int(ball_pos[0]) >= WINDOWWIDTH // 2:
                 Player_score = Player_score + 1
+                Playerpoints = points_Needed_Win - Player_score
                 Player_point.play()
-                Playerpoints -= 1
                 break
             else:
                 AI_score = AI_score + 1
+                Ai_points = points_Needed_Win - AI_score
                 AI_point.play()
-                Aipoints = Aipoints - 1
                 break
 
         if int(ball_pos[1]) >= WINDOWHEIGHT + BALL_RADIUS:
             if int(ball_pos[0]) >= WINDOWWIDTH // 2:
                 Player_score = Player_score + 1
+                Player_points = points_Needed_Win - Player_score
                 Player_point.play()
-                Playerpoints -= 1
                 break
             else:
                 AI_score = AI_score + 1
+                Ai_points = points_Needed_Win - AI_score
                 AI_point.play()
-                Aipoints = Aipoints - 1
                 break
+
         if int(ball_pos[0]) > WINDOWWIDTH + BALL_RADIUS:
             Player_score = Player_score +1
             Player_point.play()
-            Playerpoints -= 1
+            Player_points = points_Needed_Win - Player_score
             break
         if int(ball_pos[0]) < 0 - BALL_RADIUS:
             AI_score = AI_score + 1
             AI_point.play()
-            Aipoints = Aipoints - 1
+            Ai_points = points_Needed_Win - AI_score
             break
-        score5 = font1.render("Points needed to win " + str(Playerpoints), 1, WHITE)
-        windowSurface.blit(score5, (50, 60))
 
-        score6 = font1.render("Points needed to win " + str(Aipoints), 1, WHITE)
-        windowSurface.blit(score5, (600, 60))
         pygame.display.update()
         mainClock.tick(60)
 
 
-
+    # Adds to the game score and resets game if one either Ai or Player is the best out of five
     if AI_score >= 11 and AI_score > Player_score - 2:
         AI_Game_Wins += 1
         AI_score = 0
         Player_score = 0
-        Aipoints = 11
-        Playerpoints = 11
+        Ai_points = 11
+        Player_points = 11
         winner_Round_AI.play()
-        if AI_Game_Wins == 5:
+        if AI_Game_Wins == 3:
             pygame.mixer.music.play(-1, 0.0)
             gameOver1 = font1.render("Game Over: AI WINS  Press Button to play Again ", 1, WHITE)
             windowSurface.blit(gameOver1, (200, 150))
@@ -305,7 +309,7 @@ while True:
         Aipoints = 11
         Playerpoints = 11
         winner_Round_Player.play()
-        if Player_Game_Wins == 5:
+        if Player_Game_Wins == 3:
             pygame.mixer.music.play(-1, 0.0)
             gameOver2 = font1.render("Game Over: Player WINS Press Button to play Again ", 1, WHITE)
             windowSurface.blit(gameOver2, (200, 150))
